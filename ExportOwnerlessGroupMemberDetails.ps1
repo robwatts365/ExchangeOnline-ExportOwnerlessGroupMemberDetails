@@ -34,7 +34,7 @@ IN NO EVENT SHALL MICROSOFT OR ITS SUPPLIERS BE LIABLE FOR ANY DAMAGES WHATSOEVE
 BECAUSE SOME STATES DO NOT ALLOW THE EXCLUSION OR LIMITATION OF LIABILITY FOR CONSEQUENTIAL OR INCIDENTAL DAMAGES, THE ABOVE LIMITATION MAY NOT APPLY TO YOU.", "***DISCLAIMER***", [Windows.Forms.MessageBoxButtons]::OK, [Windows.Forms.MessageBoxIcon]::Warning)
 
 # Get Date information
-$Date = $(Get-Date).ToString("yyyy-MM-dd")
+#$Date = $(Get-Date).ToString("yyyy-MM-dd")
 
 #Import Exchange Online Module
 Import-Module ExchangeOnlineManagement
@@ -55,12 +55,12 @@ $SaveChooser.filter = "All files (*.csv)| *.csv"
 $SaveChooser.ShowDialog() | Out-Null
 $SaveFile = $SaveChooser.filename
 
-# Gets all teams in the tenant, saves the Team Name and Group ID for later
+# Gets all ownerless groups in the tenant, saves the Group Name and Group Primary SMTP address for later
 Get-UnifiedGroup | Where-Object {-Not $_.ManagedBy} | foreach-Object {
     $GroupName=$_.DisplayName
     $GroupPrimarySMTP=$_.PrimarySmtpAddress
 
-#For Each Team, it gets each member and saves user data (Name, UPN, Role (Owner/Member)) to export
+#For Each Group, it gets each member and saves user data (Name and UPN) to export
 Get-UnifiedGroupLinks -Identity $GroupPrimarySMTP -LinkType Member | ForEach-Object {
         $Row = "" | Select-Object GroupName,GroupPrimarySMTP,UserUPN,UserName
         $row.GroupName=$GroupName
