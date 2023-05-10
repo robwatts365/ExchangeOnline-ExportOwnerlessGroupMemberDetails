@@ -40,17 +40,9 @@ $Date = $(Get-Date).ToString("yyyy-MM-dd")
 Import-Module ExchangeOnlineManagement
 Write-Host "Importing Exchange Online PowerShell Module..."
 
-# Import Teams Module
-Import-Module MicrosoftTeams
-Write-Host "Importing Microft Teams PowerShell Module..."
-
 # Connects to Exchange Online
 Write-Host "Connecting to Exchange Online... Look out for the pop out window."
 Connect-ExchangeOnline
-
-# Connects to Microsoft Teams
-Write-Host "Connecting to Microsoft Teams... Look out for the pop out window."
-Connect-MicrosoftTeams
 
 # Enable File Saver
 [System.Reflection.Assembly]::LoadWithPartialName("System.windows.forms") | Out-Null
@@ -69,19 +61,19 @@ Get-UnifiedGroup | Where-Object {-Not $_.ManagedBy} | foreach-Object {
     $GroupPrimarySMTP=$_.PrimarySmtpAddress
 
 #For Each Team, it gets each member and saves user data (Name, UPN, Role (Owner/Member)) to export
-    Get-TeamUser -GroupID $GroupID | ForEach-Object {
+Get-UnifiedGroupLinks -Identity $GroupPrimarySMTP -LinkType Member | ForEach-Object {
         $Row = "" | Select-Object GroupName,GroupPrimarySMTP,UserUPN,UserName
         $row.GroupName=$GroupName
         $row.GroupPrimarySMTP=$GroupPrimarySMTP
         $Row.UserName=$_.DisplayName
         $Row.UserUPN=$_.WindowsLiveID
-         $data =@($data)
+        $data =@($data)
         $data += $row 
         
     }
 }
 
 #Collates all data and saves in a CSV file. 
-$data | Export-CSV "$SaveFile" -NoTypeInformation
+$data | Export-CSV "$SaveFile" -NoTypeInformation -ErrorAction SilentlyContinue
 
 Write-Host "Done. Your export is saved to $SaveFile."
